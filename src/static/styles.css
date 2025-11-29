@@ -567,7 +567,8 @@ footer {
 
 .category-filters,
 .day-filters,
-.time-filters {
+.time-filters,
+.difficulty-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -602,14 +603,6 @@ footer {
 .difficulty-filter:hover {
   background-color: var(--primary-light);
   color: white;
-}
-
-.time-filters,
-.difficulty-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  width: 100%;
 }
 
 .reset-button {
