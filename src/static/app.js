@@ -554,14 +554,14 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <div class="share-buttons">
         <span class="share-label">Share:</span>
-        <button class="share-button share-facebook" data-activity="${name}" title="Share on Facebook">
-          <span class="share-icon">f</span>
+        <button class="share-button share-facebook" data-activity="${name}" title="Share on Facebook" aria-label="Share ${name} on Facebook">
+          <span class="share-icon" aria-hidden="true">f</span>
         </button>
-        <button class="share-button share-twitter" data-activity="${name}" title="Share on X (Twitter)">
-          <span class="share-icon">𝕏</span>
+        <button class="share-button share-twitter" data-activity="${name}" title="Share on X (Twitter)" aria-label="Share ${name} on X Twitter">
+          <span class="share-icon" aria-hidden="true">X</span>
         </button>
-        <button class="share-button share-copy" data-activity="${name}" title="Copy link">
-          <span class="share-icon">🔗</span>
+        <button class="share-button share-copy" data-activity="${name}" title="Copy link" aria-label="Copy link for ${name}">
+          <span class="share-icon" aria-hidden="true">🔗</span>
         </button>
       </div>
       <div class="activity-card-actions">
@@ -664,7 +664,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle social sharing
   function handleShare(button, activityName, description) {
-    const pageUrl = window.location.href;
+    const pageUrl = window.location.href.split('#')[0]; // Remove any existing hash
     const shareText = `Check out ${activityName} at Mergington High School! ${description}`;
     
     if (button.classList.contains("share-facebook")) {
@@ -676,14 +676,45 @@ document.addEventListener("DOMContentLoaded", () => {
       const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`;
       window.open(twitterUrl, "_blank", "width=600,height=400");
     } else if (button.classList.contains("share-copy")) {
-      // Copy link to clipboard
-      const shareUrl = `${pageUrl}#${encodeURIComponent(activityName)}`;
-      navigator.clipboard.writeText(shareUrl).then(() => {
+      // Copy link to clipboard with fallback for older browsers
+      copyToClipboard(pageUrl, activityName);
+    }
+  }
+
+  // Copy text to clipboard with fallback
+  function copyToClipboard(text, activityName) {
+    if (navigator.clipboard && window.isSecureContext) {
+      // Modern clipboard API (requires HTTPS)
+      navigator.clipboard.writeText(text).then(() => {
         showMessage(`Link copied for "${activityName}"!`, "success");
       }).catch(() => {
-        showMessage("Failed to copy link. Please try again.", "error");
+        fallbackCopyToClipboard(text, activityName);
       });
+    } else {
+      // Fallback for older browsers or non-HTTPS
+      fallbackCopyToClipboard(text, activityName);
     }
+  }
+
+  // Fallback clipboard copy using textarea
+  function fallbackCopyToClipboard(text, activityName) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.style.top = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      document.execCommand("copy");
+      showMessage(`Link copied for "${activityName}"!`, "success");
+    } catch (err) {
+      showMessage("Failed to copy link. Please copy manually.", "error");
+    }
+    
+    document.body.removeChild(textArea);
   }
 
   // Open registration modal
